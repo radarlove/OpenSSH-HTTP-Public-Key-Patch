@@ -45,8 +45,8 @@ OpenSSH Server Config (sshd.conf)
 
 ::
 
-HTTP_keys On
-HTTP_URL https://example.com/pubkeys
+    HTTP_keys On
+    HTTP_URL https://example.com/pubkeys
 
 
 This URL is a base URL.  If user 'mcfly' tries to login then the OpenSSH
@@ -66,8 +66,8 @@ to /var/www/html/keysallowed.
 
 The SSH server is configured (e.g. /etc/ssh/sshd_config)::
 
-HTTP_keys On
-HTTP_URL http://example.com/keysallowed
+    HTTP_keys On
+    HTTP_URL http://example.com/keysallowed
 
 A cronjob is created that runs every five minutes and deletes all files
 in /var/www/html/keysallowed. 
