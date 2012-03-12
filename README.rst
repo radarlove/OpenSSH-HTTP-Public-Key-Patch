@@ -40,14 +40,21 @@ keys at a URL specified in the server config.
 
 These two directives are needed to configure key retrieval via HTTP
 
-OpenSSH Server Config (sshd.conf)
+OpenSSH Server Config (sshd_config)
 ---------------------------------
 
 ::
 
-    HTTP_keys On
+    HTTP_keys yes
     HTTP_URL https://example.com/pubkeys
 
+..NOTE::
+
+    In the github patch the directives are actually 'zopeOn', and 'zopeURL',
+    references from when I originally created this patch the first time.
+    I hope to update this soon to HTTP_keys and HTTP_URL respectively.
+    Until then or unless you change the Zope references to HTTP, use
+    the zopeOn and zopeURL in your sshd_config file.
 
 This URL is a base URL.  If user 'mcfly' tries to login then the OpenSSH
 server will look for his public key at https://example.com/pubkeys/mcfly
