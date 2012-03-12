@@ -48,7 +48,8 @@ OpenSSH Server Config (sshd_config)
     HTTP_keys yes
     HTTP_URL https://example.com/pubkeys
 
-.. note:: 
+NOTE:: 
+
     In the github patch the directives are actually 'zopeOn', and 'zopeURL',
     references from when I originally created this patch the first time.
     I hope to update this soon to HTTP_keys and HTTP_URL respectively.
