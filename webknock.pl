@@ -14,16 +14,16 @@ $keypath = "$store_dir/$user";
 print header, start_html('Web Knocker');
 
 if (($user) and ($user =~ /[a-zA-Z]/)) {
-        if (-f $keypath) {
-                $cmd = "ln -sf $keypath $allow_dir/$user";
-                `$cmd`;
-                if ($? != 0) {
-                            $msg = 'Error';
-            }else {
-                $msg = "Thanks $user, you can now login";
-            }
+    if (-f $keypath) {
+        $cmd = "ln -sf $keypath $allow_dir/$user";
+        `$cmd`;
+        if ($? != 0) {
+            $msg = 'Error';
+        }else {
+            $msg = "Thanks $user, you can now login";
+        }
     }else {
-                    $msg = "Invalid user :$user:$keypath";
+        $msg = "Invalid user :$user:$keypath";
     }
 }else {
     print
