@@ -46,16 +46,16 @@ OpenSSH Server Config (sshd_config)
 
 ::
 
-    HTTP_keys yes
-    HTTP_URL https://example.com/pubkeys
+    httpOn yes
+    httpURL http://server.my.com/allowedkeys/
 
 NOTE:: 
+    Warning. I had to configure my 404 error page to be empty
+    when not using CGI.  If your webserver returns an html page, 
+    like a default 404 page then the server will loop trying
+    to parse the HTML.  Return a key, or nothing; or modify
+    the code ;). Must be a DSA key with this version.
 
-    In the github patch the directives are actually 'zopeOn', and 'zopeURL',
-    references from when I originally created this patch the first time.
-    I hope to update this soon to HTTP_keys and HTTP_URL respectively.
-    Until then or unless you change the Zope references to HTTP, use
-    the zopeOn and zopeURL in your sshd_config file.
 
 This URL is a base URL.  If user 'mcfly' tries to login then the OpenSSH
 server will look for his public key at https://example.com/pubkeys/mcfly
@@ -74,8 +74,9 @@ to /var/www/html/keysallowed.
 
 The SSH server is configured (e.g. /etc/ssh/sshd_config)::
 
-    HTTP_keys On
-    HTTP_URL http://example.com/keysallowed
+    httpOn yes
+    httpURL http://server.my.com/allowedkeys/
+
 
 A cronjob is created that runs every five minutes and deletes all files
 in /var/www/html/keysallowed. 

@@ -78,7 +78,7 @@ index 5bccb5d..89ce238 100644
  
  	if (!f) {
 diff --git key.c key.c
-index 5cc4132..44a7f92 100644
+index 5cc4132..2584ec1 100644
 --- key.c
 +++ key.c
 @@ -54,6 +54,11 @@
@@ -140,14 +140,14 @@ index 5cc4132..44a7f92 100644
 +{
 +  CURL *curl_handle;
 +
-+  struct MemoryStruct zpubKey;
++  struct MemoryStruct HTTPpubKey;
 +  char url[256];
 +  strcpy(url,serverurl);
 +  strcat(url,pw->pw_name);
 +  FILE * fp;
 +
-+  zpubKey.memory=NULL; /* we expect realloc(NULL, size) to work */
-+  zpubKey.size = 0;    /* no data at this point */
++  HTTPpubKey.memory=NULL; /* we expect realloc(NULL, size) to work */
++  HTTPpubKey.size = 0;    /* no data at this point */
 +
 +  curl_global_init(CURL_GLOBAL_ALL);
 +
@@ -159,13 +159,13 @@ index 5cc4132..44a7f92 100644
 +  curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0);
 +
 +  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-+  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&zpubKey);
++  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&HTTPpubKey);
 +  curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 +
 +  curl_easy_perform(curl_handle);
 +  curl_easy_cleanup(curl_handle);
 +
-+  return zpubKey.memory;
++  return HTTPpubKey.memory;
 +}
 +
 +#endif
