@@ -23,7 +23,8 @@ authentication and key management by allowing SSH server to retreive
 public keys from a URL.  Since the URL can be either a static file
 or dynamic content, any logic (subdomain, time of day, port knocking, 
 web knocking, etc)  can be used to selectively return the public key 
-and thus grant or deny access from a central webserver.
+and thus grant or deny access to a large number of hosts, from a central 
+location, an HTTP server.
 
 What is the OpenSSH HTTP Patch
 ------------------------------
