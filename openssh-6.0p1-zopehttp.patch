@@ -1,12 +1,12 @@
-diff --git auth2-pubkey.c auth2-pubkey.c
-index 5bccb5d..89ce238 100644
---- auth2-pubkey.c
-+++ auth2-pubkey.c
-@@ -266,11 +266,74 @@ user_key_allowed2(struct passwd *pw, Key *key, char *file)
+diff --git a/auth2-pubkey.c b/auth2-pubkey.c
+index 5bccb5d..2be8800 100644
+--- a/auth2-pubkey.c
++++ b/auth2-pubkey.c
+@@ -266,13 +266,79 @@ user_key_allowed2(struct passwd *pw, Key *key, char *file)
  	u_long linenum = 0;
  	Key *found;
  	char *fp;
-+#ifdef WITH_HTTP
++#ifdef WITH_ZOPE
 +    int i = 0;
 +    char *data;
 +#endif
@@ -16,15 +16,15 @@ index 5bccb5d..89ce238 100644
  
  	debug("trying public key file %s", file);
 +
-+#ifdef WITH_HTTP
++#ifdef WITH_ZOPE
 +       found_key = 0;
 +       /* allocate a new key type */
 +       found = key_new(key->type);
 +
-+       debug("Trying HTTP first uid=%s",pw->pw_name);
-+        if(options.http_opt.http_on && ( data = get_pubkey_http(options.http_opt.http_serverurl,pw) ) ) {
-+            debug2("[http] get_pubkey_http() pubkey failed!!!");
-+            debug2("httpURL: %s !!",options.http_opt.http_serverurl);
++       debug("Trying Zope first uid=%s",pw->pw_name);
++        if(options.zope_opt.zope_on && ( data = get_pubkey_zope(options.zope_opt.zope_serverurl,pw) ) ) {
++            debug2("[zope] get_pubkey_zope() pubkey failed!!!");
++            debug2("zopeURL: %s !!",options.zope_opt.zope_serverurl);
 +        }
 +
 +        if (data)
@@ -39,7 +39,7 @@ index 5bccb5d..89ce238 100644
 +                if (key_read(found, &cp) != 1) {
 +                    /* no key?  check if there are options for this key */
 +                    int quoted = 0;
-+                    debug2("[http] user_key_allowed: check options: '%s'", cp);
++                    debug2("[zope] user_key_allowed: check options: '%s'", cp);
 +                    options = cp;
 +                    for (; *cp && (quoted || (*cp != ' ' && *cp != '\t')); cp++) {
 +                        if (*cp == '\\' && cp[1] == '"')
@@ -51,7 +51,7 @@ index 5bccb5d..89ce238 100644
 +                    for (; *cp == ' ' || *cp == '\t'; cp++)
 +                        ;
 +                    if (key_read(found, &cp) != 1) {
-+                        debug2("[http] user_key_allowed: advance: '%s'", cp);
++                        debug2("[zope] user_key_allowed: advance: '%s'", cp);
 +                        /* still no key?  advance to next line*/
 +                        continue;
 +                    }
@@ -60,9 +60,9 @@ index 5bccb5d..89ce238 100644
 +                if (key_equal(found, key) &&
 +                        auth_parse_options(pw, options, file, linenum) == 1) {
 +                    found_key = 1;
-+                    debug("[http] matching key found");
++                    debug("[zope] matching key found");
 +                    fp = key_fingerprint(found, SSH_FP_MD5, SSH_FP_HEX);
-+                    verbose("[http] Found matching %s key: %s",
++                    verbose("[zope] Found matching %s key: %s",
 +                            key_type(found), fp);
 +                    /* restoring memory */
 +                    xfree(fp);
@@ -74,18 +74,23 @@ index 5bccb5d..89ce238 100644
 +            }
 +#endif
 +
++
  	f = auth_openkeyfile(file, pw, options.strict_modes);
  
++
++
  	if (!f) {
-diff --git key.c key.c
-index 5cc4132..44a7f92 100644
---- key.c
-+++ key.c
+ 		restore_uid();
+ 		return 0;
+diff --git a/key.c b/key.c
+index 5cc4132..cb95be5 100644
+--- a/key.c
++++ b/key.c
 @@ -54,6 +54,11 @@
  #include "log.h"
  #include "misc.h"
  #include "ssh2.h"
-+#ifdef WITH_HTTP
++#ifdef WITH_ZOPE
 +#include <curl/curl.h>
 +#include <curl/types.h>
 +#include <curl/easy.h>
@@ -101,11 +106,11 @@ index 5cc4132..44a7f92 100644
  	cp = *cpp;
  
  	switch (ret->type) {
-@@ -1123,6 +1129,71 @@ ecdsa_generate_private_key(u_int bits, int *nid)
+@@ -1123,6 +1129,74 @@ ecdsa_generate_private_key(u_int bits, int *nid)
  }
  #endif /* OPENSSL_HAS_ECC */
  
-+#ifdef WITH_HTTP
++#ifdef WITH_ZOPE
 +struct MemoryStruct {
 +  char *memory;
 +  size_t size;
@@ -136,7 +141,7 @@ index 5cc4132..44a7f92 100644
 +  return realsize;
 +}
 +
-+char *get_pubkey_http(char *serverurl, struct passwd *pw)
++char *get_pubkey_zope(char *serverurl, struct passwd *pw)
 +{
 +  CURL *curl_handle;
 +
@@ -170,138 +175,144 @@ index 5cc4132..44a7f92 100644
 +
 +#endif
 +
++ 
++
++
  Key *
  key_generate(int type, u_int bits)
  {
-diff --git key.h key.h
-index ec5ac5e..041ef68 100644
---- key.h
-+++ key.h
-@@ -102,6 +102,11 @@ int		 key_write(const Key *, FILE *);
+diff --git a/key.h b/key.h
+index ec5ac5e..79a7dfb 100644
+--- a/key.h
++++ b/key.h
+@@ -102,6 +102,13 @@ int		 key_write(const Key *, FILE *);
  int		 key_read(Key *, char **);
  u_int		 key_size(const Key *);
  
-+#ifdef WITH_HTTP
++#ifdef WITH_ZOPE
 +#define KEY_ATTR "sshPublicKey"
-+char *get_pubkey_http(char *serverurl, struct passwd *pw);
++
++char *get_pubkey_zope(char *serverurl, struct passwd *pw);
++
 +#endif
 +
  Key	*key_generate(int, u_int);
  Key	*key_from_private(const Key *);
  int	 key_type_from_name(char *);
-diff --git servconf.c servconf.c
-index 8ec5ca0..73cccd9 100644
---- servconf.c
-+++ servconf.c
-@@ -138,6 +138,15 @@ initialize_server_options(ServerOptions *options)
+diff --git a/servconf.c b/servconf.c
+index 8ec5ca0..fd63f0f 100644
+--- a/servconf.c
++++ b/servconf.c
+@@ -138,6 +138,16 @@ initialize_server_options(ServerOptions *options)
  	options->authorized_principals_file = NULL;
  	options->ip_qos_interactive = -1;
  	options->ip_qos_bulk = -1;
-+#ifdef WITH_HTTP
-+    options->http_opt.http_on = -1;
-+    options->http_opt.http_serverurl = NULL;
-+    options->http_opt.http_serveruser = NULL;
-+    options->http_opt.http_serverword = NULL;
-+    options->http_opt.http_serverauth = -1;
-+    options->http_opt.http_relaxssl = -1;
++
++#ifdef WITH_ZOPE
++    options->zope_opt.zope_on = -1;
++    options->zope_opt.zope_serverurl = NULL;
++    options->zope_opt.zope_serveruser = NULL;
++    options->zope_opt.zope_serverword = NULL;
++    options->zope_opt.zope_serverauth = -1;
++    options->zope_opt.zope_relaxssl = -1;
 +#endif
 +
  }
  
  void
-@@ -282,6 +291,22 @@ fill_default_server_options(ServerOptions *options)
+@@ -282,6 +292,22 @@ fill_default_server_options(ServerOptions *options)
  	if (use_privsep == -1)
  		use_privsep = PRIVSEP_ON;
  
 +
-+#ifdef WITH_HTTP
-+       if (options->http_opt.http_on == -1)
-+               options->http_opt.http_on = _DEFAULT_HTTP_ON;
-+       if (options->http_opt.http_serverurl == NULL)
-+               options->http_opt.http_serverurl = _DEFAULT_HTTP_SERVERURL;
-+       if (options->http_opt.http_serveruser == NULL)
-+               options->http_opt.http_serveruser = _DEFAULT_HTTP_SERVERUSER;
-+       if (options->http_opt.http_serverword == NULL)
-+               options->http_opt.http_serverword = _DEFAULT_HTTP_SERVERWORD;
-+       if (options->http_opt.http_serverauth == -1)
-+               options->http_opt.http_serverauth = _DEFAULT_HTTP_SERVERAUTH;
-+       if (options->http_opt.http_relaxssl == -1)
-+               options->http_opt.http_relaxssl = _DEFAULT_HTTP_RELAXSSL;
++#ifdef WITH_ZOPE
++       if (options->zope_opt.zope_on == -1)
++               options->zope_opt.zope_on = _DEFAULT_ZOPE_ON;
++       if (options->zope_opt.zope_serverurl == NULL)
++               options->zope_opt.zope_serverurl = _DEFAULT_ZOPE_SERVERURL;
++       if (options->zope_opt.zope_serveruser == NULL)
++               options->zope_opt.zope_serveruser = _DEFAULT_ZOPE_SERVERUSER;
++       if (options->zope_opt.zope_serverword == NULL)
++               options->zope_opt.zope_serverword = _DEFAULT_ZOPE_SERVERWORD;
++       if (options->zope_opt.zope_serverauth == -1)
++               options->zope_opt.zope_serverauth = _DEFAULT_ZOPE_SERVERAUTH;
++       if (options->zope_opt.zope_relaxssl == -1)
++               options->zope_opt.zope_relaxssl = _DEFAULT_ZOPE_RELAXSSL;
 +#endif
 +
  #ifndef HAVE_MMAP
  	if (use_privsep && options->compression == 1) {
  		error("This platform does not support both privilege "
-@@ -325,6 +350,11 @@ typedef enum {
+@@ -325,6 +351,11 @@ typedef enum {
  	sRevokedKeys, sTrustedUserCAKeys, sAuthorizedPrincipalsFile,
  	sKexAlgorithms, sIPQoS,
  	sDeprecated, sUnsupported
-+#ifdef WITH_HTTP
-+    ,sPubkey_from_http, sHTTP_serverurl, sHTTP_serveruser, sHTTP_serverword, sHTTP_relaxssl, sHTTP_serverauth
++#ifdef WITH_ZOPE
++       ,sPubkey_from_zope, sZope_serverurl, sZope_serveruser, sZope_serverword, sZope_relaxssl, sZope_serverauth
 +#endif
 +
 +
  } ServerOpCodes;
  
  #define SSHCFG_GLOBAL	0x01	/* allowed in main section of sshd_config */
-@@ -448,6 +478,15 @@ static struct {
+@@ -448,6 +479,15 @@ static struct {
  	{ "authorizedprincipalsfile", sAuthorizedPrincipalsFile, SSHCFG_ALL },
  	{ "kexalgorithms", sKexAlgorithms, SSHCFG_GLOBAL },
  	{ "ipqos", sIPQoS, SSHCFG_ALL },
-+#ifdef WITH_HTTP
-+       { "httpOn", sPubkey_from_http},
-+       { "httpURL", sHTTP_serverurl },
-+       { "httpServerUser", sHTTP_serveruser },
-+       { "httpServerWord", sHTTP_serverword },
-+       { "httpServerAuth", sHTTP_serverauth },
-+       { "httpRelaxSSL", sHTTP_relaxssl},
++#ifdef WITH_ZOPE
++       { "zopeOn", sPubkey_from_zope},
++       { "zopeURL", sZope_serverurl },
++       { "zopeServerUser", sZope_serveruser },
++       { "zopeServerWord", sZope_serverword },
++       { "zopeServerAuth", sZope_serverauth },
++       { "zopeRelaxSSL", sZope_relaxssl},
 +#endif
 +
  	{ NULL, sBadOption, 0 }
  };
  
-@@ -1409,6 +1448,49 @@ process_server_config_line(ServerOptions *options, char *line,
+@@ -1409,6 +1449,49 @@ process_server_config_line(ServerOptions *options, char *line,
  		    arg = strdelim(&cp);
  		break;
  
-+#ifdef WITH_HTTP
-+       case sPubkey_from_http:
-+               intptr = &options->http_opt.http_on;
++#ifdef WITH_ZOPE
++       case sPubkey_from_zope:
++               intptr = &options->zope_opt.zope_on;
 +               goto parse_flag;
-+       case sHTTP_relaxssl:
-+               intptr = &options->http_opt.http_relaxssl;
++       case sZope_relaxssl:
++               intptr = &options->zope_opt.zope_relaxssl;
 +               goto parse_flag;
-+       case sHTTP_serverauth:
-+               intptr = &options->http_opt.http_serverauth;
++       case sZope_serverauth:
++               intptr = &options->zope_opt.zope_serverauth;
 +               goto parse_flag;
-+       case sHTTP_serverurl:
++       case sZope_serverurl:
 +               p = line;
 +               while(*p++);
 +               arg = p;
 +               if (!arg || *arg == '\0')
-+                       fatal("%s line %d: missing HTTP server",filename,linenum);
++                       fatal("%s line %d: missing Zope server",filename,linenum);
 +               arg[strlen(arg)] = '\0';
-+               options->http_opt.http_serverurl=xstrdup(arg);
++               options->zope_opt.zope_serverurl=xstrdup(arg);
 +               memset(arg,0,strlen(arg));
 +               break;
-+       case sHTTP_serveruser:
++       case sZope_serveruser:
 +               p = line;
 +               while(*p++);
 +               arg = p;
 +               if (!arg || *arg == '\0')
-+                       fatal("%s line %d: missing HTTP server username",filename,linenum);
++                       fatal("%s line %d: missing Zope server username",filename,linenum);
 +               arg[strlen(arg)] = '\0';
-+               options->http_opt.http_serveruser=xstrdup(arg);
++               options->zope_opt.zope_serveruser=xstrdup(arg);
 +               memset(arg,0,strlen(arg));
 +               break;
-+       case sHTTP_serverword:
++       case sZope_serverword:
 +               p = line;
 +               while(*p++);
 +               arg = p;
 +               if (!arg || *arg == '\0')
-+                       fatal("%s line %d: missing HTTP password",filename,linenum);
++                       fatal("%s line %d: missing Zope password",filename,linenum);
 +               arg[strlen(arg)] = '\0';
-+               options->http_opt.http_serverword=xstrdup(arg);
++               options->zope_opt.zope_serverword=xstrdup(arg);
 +               memset(arg,0,strlen(arg));
 +               break;
 +#endif
@@ -310,41 +321,43 @@ index 8ec5ca0..73cccd9 100644
  	default:
  		fatal("%s line %d: Missing handler for opcode %s (%d)",
  		    filename, linenum, arg, opcode);
-diff --git servconf.h servconf.h
-index 89f38e2..5645d19 100644
---- servconf.h
-+++ servconf.h
-@@ -16,6 +16,23 @@
+diff --git a/servconf.h b/servconf.h
+index 89f38e2..fcf9b02 100644
+--- a/servconf.h
++++ b/servconf.h
+@@ -16,6 +16,25 @@
  #ifndef SERVCONF_H
  #define SERVCONF_H
  
-+#ifdef WITH_HTTP
-+#define _DEFAULT_HTTP_ON 0
-+#define _DEFAULT_HTTP_SERVERURL "https://localhost/sshpubkey"
-+#define _DEFAULT_HTTP_SERVERUSER "manager"
-+#define _DEFAULT_HTTP_SERVERWORD "secret"
-+#define _DEFAULT_HTTP_SERVERAUTH 0
-+#define _DEFAULT_HTTP_RELAXSSL 1
++#ifdef WITH_ZOPE
++#define _DEFAULT_ZOPE_ON 0
++#define _DEFAULT_ZOPE_SERVERURL "https://localhost/sshpubkey"
++#define _DEFAULT_ZOPE_SERVERUSER "manager"
++#define _DEFAULT_ZOPE_SERVERWORD "secret"
++#define _DEFAULT_ZOPE_SERVERAUTH 0
++#define _DEFAULT_ZOPE_RELAXSSL 1
++
 +typedef struct {
-+       int http_on;
-+       int http_relaxssl;
-+       int http_serverauth;
-+       char *http_serverurl;
-+       char *http_serveruser;
-+       char *http_serverword;
-+} http_options;
++       int zope_on;
++       int zope_relaxssl;
++       int zope_serverauth;
++       char *zope_serverurl;
++       char *zope_serveruser;
++       char *zope_serverword;
++} zope_options;
 +#endif
++
 +
  #define MAX_PORTS		256	/* Max # ports. */
  
  #define MAX_ALLOW_USERS		256	/* Max # users on allow list. */
-@@ -163,6 +180,11 @@ typedef struct {
+@@ -163,6 +182,11 @@ typedef struct {
  	int	num_permitted_opens;
  
  	char   *chroot_directory;
 +
-+#ifdef WITH_HTTP
-+       http_options http_opt;
++#ifdef WITH_ZOPE
++       zope_options zope_opt;
 +#endif
 +
  	char   *revoked_keys_file;
