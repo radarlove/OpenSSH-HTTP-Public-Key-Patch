@@ -11,7 +11,7 @@ OpenSSH HTTP Patch
 What's here
 -----------
 
-A patch to SSH Server to support the retreival of public keys via an
+A patch to SSH Server to support the retrieval of public keys via an
 HTTP URL for centralized key management.  A demo application implementing
 port-knocking.
 
@@ -22,8 +22,8 @@ To provide centralized, and more flexible and sophisticated SSH based
 authentication and key management by allowing SSH server to retreive 
 public keys from a URL.  Since the URL can be either a static file
 or dynamic content, any logic (subdomain, time of day, port knocking, 
-etc)  can be used to selectively return the public key and thus grant or 
-deny access from a central webserver.
+web knocking, etc)  can be used to selectively return the public key 
+and thus grant or deny access from a central webserver.
 
 What is the OpenSSH HTTP Patch
 ------------------------------
@@ -62,7 +62,7 @@ server will look for his public key at https://example.com/pubkeys/mcfly
 The URL can be HTTP or HTTPS.  The file can be static, or the result
 of a dynamic web application or CGI script.
 
-Port-Knocking Example
+Web-Knocking Example
 ---------------------
 
 A webserver is configured with a DocumentRoot of /var/www/html.  
@@ -86,6 +86,4 @@ If the username is 'mcfly' then user mcfly's key will be copied to the
 keysallowed/ directory and he will have some amount of time that is less 
 than 5 minutes in which to login in via SSH.
 
-McFly can stay logged in if his key is deleted with in a few minutes, or
-knock again.
 
