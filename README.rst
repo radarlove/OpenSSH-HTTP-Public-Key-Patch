@@ -11,7 +11,7 @@ OpenSSH HTTP Patch
 What's here
 -----------
 
-A patch to SSH Server to support the retrieval of public keys via an
+A patch to `OpenSSH Server`_ to support the retrieval of public keys via an
 HTTP URL for centralized key management.  A demo application implementing
 port-knocking.
 
@@ -130,4 +130,6 @@ Perl Example
     print $msg, end_html;
 
 
+
+.. _`OpenSSH Server`: http://www.openssh.org
 
