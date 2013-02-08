@@ -15,9 +15,6 @@ A patch to `OpenSSH Server`_ to support the retrieval of public keys via an
 HTTP URL for centralized key management.  A demo application implementing
 port-knocking.
 
-.. note::
-
-This is, or was rather proof-of-concept code
 
 What's the point
 ----------------
@@ -29,6 +26,29 @@ or dynamic content, any logic (subdomain, time of day, port knocking,
 web knocking, etc)  can be used to selectively return the public key 
 and thus grant or deny access to a large number of hosts, from a central 
 location, an HTTP server.
+
+NOTE
+----
+
+This is, or was rather proof-of-concept code, because there was only an LDAP
+mechanism for fetching keys back in 2005 when this was written.  
+
+If you use SSL there are a number of libcURL (http://curl.haxx.se/libcurl/) 
+options that are relevant for security, as mentioned in the issue tracker.
+
+There is an option called 'httpRelaxSSL' that was included so that one
+can configure whether the code verifies SSL certificates, but the original
+code was lost in a disk failure, and although the new code has the option
+it is not wired in to change the libcURL option.  So, you need to either
+set those options before compiling or update the code yourself; I am not 
+maintaing this, it is here for my reference and for people to take and do 
+what they want with.
+
+In practice no one, including me will deploy this code, or any other ssh-server 
+patch, in an organization, primarily because you are then reliant on someone to
+update the patch everytime the underlying ssh-server software is updated, and
+to potentially package it in one or more packaging systems (RPM,deb,etc).
+
 
 What is the OpenSSH HTTP Patch
 ------------------------------
