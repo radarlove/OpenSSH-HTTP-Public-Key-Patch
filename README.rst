@@ -15,6 +15,10 @@ A patch to `OpenSSH Server`_ to support the retrieval of public keys via an
 HTTP URL for centralized key management.  A demo application implementing
 port-knocking.
 
+.. note::
+
+This is, or was rather proof-of-concept code
+
 What's the point
 ----------------
 
